@@ -5,35 +5,51 @@ import dash_html_components as html
 import dash_core_components as dcc
 from dash.dependencies import Input, Output
 
+dash_app = dash.Dash()
+app = dash_app.server
+
 terror = pd.read_csv('./terrorism.csv')
 col_options = [dict(label=x, value=x) for x in terror.columns]
 dimensions = ["x", "y"]
 
-app = dash.Dash(
-    __name__, external_stylesheets=["https://codepen.io/chriddyp/pen/bWLwgP.css"]
-)
+app = dash_app.server
 
-app.layout = html.Div(
-    [
-        html.H1("US Terrorism Data from 1970 to 2017"),
-        html.Div(
-            [
-                html.P([d + ":", dcc.Dropdown(id=d, options=col_options)])
-                for d in dimensions
+dash_app.layout = html.Div(children=[
+    html.H1(children='Plot.ly Dash Example'),
+
+    html.Div(children='''
+    '''),
+
+    dcc.Graph(
+        id='example-graph',
+        figure={
+            'data': [
+                {'x': terror['Year'], 'y': terror['Attacks'], 'type': 'line', 'name': u'Attacks'},
             ],
-            style={"width": "25%", "float": "left"},
-        ),
-        dcc.Graph(id="graph", style={"width": "75%", "display": "inline-block"}),
-    ]
-)
+            'layout': {
+                'title': 'Terrorist Attacks in the United States (1970-2017)'
+            }
+        }),
+    dcc.Graph(
+        figure={
+            'data': [
+                {'x': terror['Year'], 'y': terror['Deaths'], 'type': 'line', 'name': u'Deaths'},
+            ],
+            'layout': {
+                'title': 'Terrorist Fatalities in the United States (1970-2017)'
+            }
+        }),
+    dcc.Graph(
+        figure={
+            'data': [
+                {'x': terror['Year'], 'y': terror['Injuries'], 'type': 'line', 'name': u'Injuries'},
+            ],
+            'layout': {
+                'title': 'Terrorist Injuries in the United States (1970-2017)'
+            }
+        })
 
+])
 
-@app.callback(Output("graph", "figure"), [Input(d, "value") for d in dimensions])
-def make_figure(x, y):
-    
-    return px.line(terror, 
-                   x=x, 
-                   y=y, 
-                   height=700)
-
-app.run_server(debug=False)
+if __name__ == '__main__':
+    dash_app.run_server(debug=True)
